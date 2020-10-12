@@ -24,7 +24,7 @@ func waitingDb(db *sql.DB) {
 	for {
 		err := db.Ping()
 		if err != nil {
-			if time.Now().Sub(crt) > time.Second*10 {
+			if time.Now().Sub(crt) > time.Second*30 {
 				panic(err)
 			}
 			time.Sleep(time.Second)
@@ -107,7 +107,7 @@ func main() {
 	defer db1.Query("drop database test")
 
 	//设置连接1事务隔离级别
-	_, err = db1.Exec("set session transaction isolation level repeatable read")
+	_, err = db1.Exec("set session transaction isolation level read committed")
 	panicWhenError(err)
 
 	//连接2
@@ -118,7 +118,7 @@ func main() {
 	defer db2.Close()
 
 	//设置连接2事务隔离级别
-	_, err = db2.Exec("set session transaction isolation level repeatable read")
+	_, err = db2.Exec("set session transaction isolation level read committed")
 	panicWhenError(err)
 	//开始事务逻辑
 	fmt.Println("1.cmd1 开启事务")

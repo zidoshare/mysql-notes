@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/http/pprof"
 	"os"
 	"strings"
 	"time"
@@ -24,7 +27,7 @@ func waitingDb(db *sql.DB) {
 	for {
 		err := db.Ping()
 		if err != nil {
-			if time.Now().Sub(crt) > time.Second*10 {
+			if time.Now().Sub(crt) > time.Second*30 {
 				panic(err)
 			}
 			time.Sleep(time.Second)
@@ -37,6 +40,7 @@ func waitingDb(db *sql.DB) {
 type qb interface {
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	Exec(query string, args ...interface{}) (sql.Result, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 }
 
 func printfForQuery(db qb, queryStr string) {
@@ -71,6 +75,7 @@ func printfForExec(db qb, queryStr string) {
 	result, err := db.Exec(queryStr)
 	panicWhenError(err)
 	rows, err := result.RowsAffected()
+	panicWhenError(err)
 	if rows > 0 {
 		fmt.Printf(" 执行成功,影响了%d行\n", rows)
 	} else {
@@ -80,10 +85,13 @@ func printfForExec(db qb, queryStr string) {
 }
 
 func main() {
-
+	pprofHandler := http.NewServeMux()
+	pprofHandler.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
+	server := &http.Server{Addr: ":7890", Handler: pprofHandler}
+	go server.ListenAndServe()
 	//初始化数据
 	//连接1
-	db1, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/")
+	db1, err := sql.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/")
 	db1.SetMaxOpenConns(1)
 	panicWhenError(err)
 	//等待数据库启动完成
@@ -101,24 +109,20 @@ func main() {
 		// do whatever you need with result and error
 	}
 	db1.Exec("use test")
-	defer db1.Close()
-
-	//代码结束清除数据
-	defer db1.Query("drop database test")
+	// db1.Exec("SET GLOBAL innodb_lock_wait_timeout=3;")
 
 	//设置连接1事务隔离级别
-	_, err = db1.Exec("set session transaction isolation level read uncommitted")
+	_, err = db1.Exec("set session transaction isolation level serializable")
 	panicWhenError(err)
 
 	//连接2
-	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test")
+	db2, err := sql.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/test")
 
 	panicWhenError(err)
 	db2.SetMaxOpenConns(1)
-	defer db2.Close()
 
 	//设置连接2事务隔离级别
-	_, err = db2.Exec("set session transaction isolation level read uncommitted")
+	_, err = db2.Exec("set session transaction isolation level serializable")
 	panicWhenError(err)
 	//开始事务逻辑
 	fmt.Println("1.cmd1 开启事务")
@@ -131,6 +135,7 @@ func main() {
 	panicWhenError(err)
 	fmt.Print("4.cmd2")
 	printfForQuery(tx2, "select * from t")
+	//这里会被锁住，因为cmd1还未提交。
 	fmt.Print("5.cmd2")
 	printfForExec(tx2, "update t set c = 2 where c = 1")
 	fmt.Print("6.cmd1")
@@ -143,4 +148,12 @@ func main() {
 	tx1.Commit()
 	fmt.Print("10.cmd1")
 	printfForQuery(db1, "select * from t")
+
+	//代码结束清除数据
+	_, err = db1.Exec("drop database test")
+	panicWhenError(err)
+	err = db1.Close()
+	panicWhenError(err)
+	err = db2.Close()
+	panicWhenError(err)
 }

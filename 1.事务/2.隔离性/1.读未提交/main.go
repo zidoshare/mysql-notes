@@ -24,7 +24,7 @@ func waitingDb(db *sql.DB) {
 	for {
 		err := db.Ping()
 		if err != nil {
-			if time.Now().Sub(crt) > time.Second*10 {
+			if time.Now().Sub(crt) > time.Second*30 {
 				panic(err)
 			}
 			time.Sleep(time.Second)
@@ -107,7 +107,7 @@ func main() {
 	defer db1.Query("drop database test")
 
 	//设置连接1事务隔离级别
-	_, err = db1.Exec("set session transaction isolation level serializable")
+	_, err = db1.Exec("set session transaction isolation level read uncommitted")
 	panicWhenError(err)
 
 	//连接2
@@ -118,7 +118,7 @@ func main() {
 	defer db2.Close()
 
 	//设置连接2事务隔离级别
-	_, err = db2.Exec("set session transaction isolation level serializable")
+	_, err = db2.Exec("set session transaction isolation level read uncommitted")
 	panicWhenError(err)
 	//开始事务逻辑
 	fmt.Println("1.cmd1 开启事务")
@@ -131,7 +131,6 @@ func main() {
 	panicWhenError(err)
 	fmt.Print("4.cmd2")
 	printfForQuery(tx2, "select * from t")
-	//这里会被锁住，因为cm1还未提交
 	fmt.Print("5.cmd2")
 	printfForExec(tx2, "update t set c = 2 where c = 1")
 	fmt.Print("6.cmd1")

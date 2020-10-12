@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: test_mysql
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+  read_un_committed:
+    container_name: read_un_committed
+    build: ./1.读未提交
+  read_committed:
+    container_name: read_committed
+    build: ./2.读已提交
+  repeatable_read:
+    container_name: repeatable_read
+    build: ./3.可重复读
+  serializable:
+    container_name: serializable
+    build: ./4.串行化

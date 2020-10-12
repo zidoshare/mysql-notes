@@ -16,6 +16,8 @@
 +---+
 | 1 |
 +---+
+5.cmd2执行sql:update t set c = 2 where c = 1
+panic: Error 1205: Lock wait timeout exceeded; try restarting transaction
 ```
 
-与可重复读相比，cmd2执行update t set c = 2 where c = 1时会锁住
+与可重复读相比，cmd2执行update t set c = 2 where c = 1时会死锁

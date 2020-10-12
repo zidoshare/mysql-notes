@@ -9,3 +9,5 @@ services:
   main:
     container_name: project
     build: .
+    volumes: 
+      - ${GOPATH}:/go

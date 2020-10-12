@@ -1,4 +1,4 @@
-FROM golang:1.14 as builder
+FROM golang:1.14
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN  export GOPROXY=https://goproxy.cn && go mod download
