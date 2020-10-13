@@ -135,7 +135,7 @@ func main() {
 	waitingDb(db1)
 	//代码结束清除数据
 	defer func() {
-		_, err2 := db1.Exec("drop database test")
+		_, err2 := db1.Exec("drop database test_4")
 		if err2 != nil {
 			panic(err2)
 		}
@@ -155,7 +155,7 @@ func main() {
 		}
 		// do whatever you need with result and error
 	}
-	db1.Exec("use test")
+	db1.Exec("use test_4")
 	db1.Exec("SET GLOBAL innodb_lock_wait_timeout=3;")
 
 	//设置连接1事务隔离级别
@@ -165,7 +165,7 @@ func main() {
 	}
 
 	//连接2
-	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test")
+	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test_4")
 	if err != nil {
 		panic(err)
 	}

@@ -1,5 +1,11 @@
 version: '3.8'
 
+# 此docker-compose 无法执行跟--abort-on-container-exit指令，这样会导致只有一个project被启动，只能运行
+# docker-compose up -d --build
+# 之后可以执行 docker-compose logs [serializable|read_committed|read_un_committed|repeatable_read]查看对应输出结果
+# 最后执行
+# docker-compose rm -f 
+# 删除对应容器回收资源
 services:
   mysql:
     container_name: test_mysql
