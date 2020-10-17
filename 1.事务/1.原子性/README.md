@@ -42,6 +42,7 @@ insert into t(c) values(1);
 
 ### 执行结果
 
+```
 1.执行sql:select * from t
 +---+
 | C |
@@ -106,3 +107,4 @@ insert into t(c) values(1);
 | 2 |
 | 3 |
 +---+
+```
