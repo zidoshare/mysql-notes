@@ -34,7 +34,7 @@ func main() {
 	desc.WaitingDb(db1)
 	//代码结束清除数据
 	defer func() {
-		_, err2 := db1.Exec("drop database test_2_1")
+		_, err2 := db1.Exec("drop database test_3")
 		if err2 != nil {
 			panic(err2)
 		}
@@ -54,17 +54,11 @@ func main() {
 		}
 		// do whatever you need with result and error
 	}
-	db1.Exec("use test_2_1")
+	db1.Exec("use test_3")
 	db1.Exec("SET GLOBAL innodb_lock_wait_timeout=3;")
 
-	//设置连接1事务隔离级别
-	_, err = db1.Exec("set session transaction isolation level read uncommitted")
-	if err != nil {
-		panic(err)
-	}
-
 	//连接2
-	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test_2_1")
+	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test_3")
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +71,7 @@ func main() {
 		}
 	}()
 	//设置连接2事务隔离级别
-	_, err = db2.Exec("set session transaction isolation level read uncommitted")
+	_, err = db2.Exec("set session transaction isolation level repeatable read")
 	if err != nil {
 		panic(err)
 	}

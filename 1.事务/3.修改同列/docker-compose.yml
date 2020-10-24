@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: test_mysql
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+  main:
+    container_name: project
+    build: .
+    volumes: 
+      - ${GOPATH}:/go

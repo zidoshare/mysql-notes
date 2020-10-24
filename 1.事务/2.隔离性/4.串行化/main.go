@@ -2,116 +2,15 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/pprof"
-	"os"
 	"strings"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/olekukonko/tablewriter"
+	"github.com/zidoshare/desc"
 )
-
-//ErrNotDbOrTx type error
-var ErrNotDbOrTx = errors.New("db必须为sql.DB或sql.Tx类型")
-
-func waitingDb(db *sql.DB) {
-	crt := time.Now()
-
-	for {
-		err := db.Ping()
-		if err != nil {
-			if time.Now().Sub(crt) > time.Second*30 {
-				panic(err)
-			}
-			time.Sleep(time.Second)
-		} else {
-			break
-		}
-	}
-}
-
-func printfForQuery(db interface{}, queryStr string) error {
-	fmt.Println("执行sql:" + queryStr)
-	var rows *sql.Rows
-	var err error
-	switch db.(type) {
-	case *sql.DB:
-		rows, err = db.(*sql.DB).Query(queryStr)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-	case *sql.Tx:
-		rows, err = db.(*sql.Tx).Query(queryStr)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-	default:
-		return ErrNotDbOrTx
-	}
-	columns, err := rows.Columns()
-	if err != nil {
-		panic(err)
-	}
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader(columns)
-	data := make([][]string, 0)
-
-	for rows.Next() {
-		row := make([]interface{}, len(columns))
-		container := make([]string, len(columns))
-		for i := range row {
-			row[i] = &container[i]
-		}
-		rows.Scan(row...)
-		data = append(data, container)
-	}
-	table.AppendBulk(data)
-	table.Render()
-	return nil
-}
-
-func printfForExec(db interface{}, queryStr string) error {
-	fmt.Print("执行sql:" + queryStr)
-	var result sql.Result
-	var err error
-	switch db.(type) {
-	case *sql.DB:
-		result, err = db.(*sql.DB).Exec(queryStr)
-		if err != nil {
-			return err
-		}
-	case *sql.Tx:
-		result, err = db.(*sql.Tx).Exec(queryStr)
-		if err != nil {
-			return err
-		}
-	default:
-		return ErrNotDbOrTx
-	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		switch db.(type) {
-		case sql.Tx:
-			db.(*sql.Tx).Rollback()
-		}
-		panic(err)
-	}
-	if rows > 0 {
-		fmt.Printf(" 执行成功,影响了%d行\n", rows)
-	} else {
-		fmt.Println(" 执行失败,没有更改任何数据")
-	}
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func main() {
 	pprofHandler := http.NewServeMux()
@@ -132,10 +31,10 @@ func main() {
 	}()
 	db1.SetMaxOpenConns(1)
 	//等待数据库启动完成
-	waitingDb(db1)
+	desc.WaitingDb(db1)
 	//代码结束清除数据
 	defer func() {
-		_, err2 := db1.Exec("drop database test_4")
+		_, err2 := db1.Exec("drop database test_2_4")
 		if err2 != nil {
 			panic(err2)
 		}
@@ -155,7 +54,7 @@ func main() {
 		}
 		// do whatever you need with result and error
 	}
-	db1.Exec("use test_4")
+	db1.Exec("use test_2_4")
 	db1.Exec("SET GLOBAL innodb_lock_wait_timeout=3;")
 
 	//设置连接1事务隔离级别
@@ -165,7 +64,7 @@ func main() {
 	}
 
 	//连接2
-	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test_4")
+	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test_2_4")
 	if err != nil {
 		panic(err)
 	}
@@ -189,7 +88,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Print("2.cmd1")
-	err = printfForQuery(tx1, "select * from t")
+	err = desc.PrintfForQuery(tx1, "select * from t")
 	defer func() {
 		if err != nil {
 			err2 := tx1.Rollback()
@@ -212,18 +111,18 @@ func main() {
 		}
 	}()
 	fmt.Print("4.cmd2")
-	err = printfForQuery(tx2, "select * from t")
+	err = desc.PrintfForQuery(tx2, "select * from t")
 	if err != nil {
 		panic(err)
 	}
 	//这里会被锁住，因为cmd1还未提交。
 	fmt.Print("5.cmd2")
-	err = printfForExec(tx2, "update t set c = 2 where c = 1")
+	err = desc.PrintfForExec(tx2, "update t set c = 2 where c = 1")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Print("6.cmd1")
-	err = printfForQuery(tx1, "select * from t")
+	err = desc.PrintfForQuery(tx1, "select * from t")
 	if err != nil {
 		panic(err)
 	}
@@ -233,7 +132,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Print("8.cmd1")
-	err = printfForQuery(tx1, "select * from t")
+	err = desc.PrintfForQuery(tx1, "select * from t")
 	if err != nil {
 		panic(err)
 	}
@@ -243,7 +142,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Print("10.cmd1")
-	err = printfForQuery(db1, "select * from t")
+	err = desc.PrintfForQuery(db1, "select * from t")
 	if err != nil {
 		panic(err)
 	}
