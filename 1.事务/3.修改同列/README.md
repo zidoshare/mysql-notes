@@ -1,7 +1,6 @@
 可重复读的场景下
 
 执行结果为：
-```
 1.cmd1 开启事务
 2.cmd1执行sql:select * from t
 +---+
@@ -16,28 +15,10 @@
 +---+
 | 1 |
 +---+
-5.cmd2执行sql:update t set c = 2 where c = 1 执行成功,影响了1行
-6.cmd1执行sql:select * from t
-+---+
-| C |
-+---+
-| 1 |
-+---+
-7.cmd2 提交事务:
-8.cmd1执行sql:select * from t
-+---+
-| C |
-+---+
-| 1 |
-+---+
-9.cmd1 提交事务:
-10.cmd1执行sql:select * from t
-+---+
-| C |
-+---+
-| 2 |
-+---+
-```
-注意这里与读已提交相比，第8步仍然能读到`1`，即使是cmd2的修改事务已经提交。
+5.cmd1执行sql:update t set c = 3 where c = 1 执行成功,影响了1行
+6.cmd2执行sql:update t set c = 2 where c = 1
+panic: Error 1205: Lock wait timeout exceeded; try restarting transaction
 
-也就是说，可重复读场景下，即使cmd2提交了数据，但是cmd1仍然能够在没有提交事务的情况下保证读取的一致性
+goroutine 1 [running]:
+main.main()
+	d:/projects/go/mysql-notes/1.事务/3.修改同列/main.go:121 +0x1187

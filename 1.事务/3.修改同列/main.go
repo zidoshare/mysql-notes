@@ -34,7 +34,7 @@ func main() {
 	desc.WaitingDb(db1)
 	//代码结束清除数据
 	defer func() {
-		_, err2 := db1.Exec("drop database test_3")
+		_, err2 := db1.Exec("drop database test_3_3")
 		if err2 != nil {
 			panic(err2)
 		}
@@ -54,11 +54,11 @@ func main() {
 		}
 		// do whatever you need with result and error
 	}
-	db1.Exec("use test_3")
+	db1.Exec("use test_3_3")
 	db1.Exec("SET GLOBAL innodb_lock_wait_timeout=3;")
 
 	//连接2
-	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test_3")
+	db2, err := sql.Open("mysql", "root:123456@tcp(mysql:3306)/test_3_3")
 	if err != nil {
 		panic(err)
 	}
@@ -109,34 +109,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Print("5.cmd1")
+	err = desc.PrintfForExec(tx1, "update t set c = 3 where c = 1")
+	if err != nil {
+		panic(err)
+	}
 	//这里会被锁住，因为cmd1还未提交。
-	fmt.Print("5.cmd2")
+	fmt.Print("6.cmd2")
 	err = desc.PrintfForExec(tx2, "update t set c = 2 where c = 1")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Print("6.cmd1")
-	err = desc.PrintfForQuery(tx1, "select * from t")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("7.cmd2 提交事务:")
-	err = tx2.Commit()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Print("8.cmd1")
-	err = desc.PrintfForQuery(tx1, "select * from t")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("9.cmd1 提交事务:")
-	err = tx1.Commit()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Print("10.cmd1")
-	err = desc.PrintfForQuery(db1, "select * from t")
 	if err != nil {
 		panic(err)
 	}
