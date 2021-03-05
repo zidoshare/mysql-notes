@@ -2,16 +2,18 @@
 
 ### 复现步骤
 
-* 启动mysql
-
+* 启动 MySQL
 * 准备最简单的建库建表语句
+
 ```sql
 create database test;
 use test;
 create table t(c int) engine=InnoDB;
 insert into t(c) values(1);
 ```
+
 * 导入数据
+
 ```sql
 drop database if exists test;
 create database test;
@@ -19,8 +21,10 @@ use test;
 create table t(c int) engine=InnoDB;
 insert into t(c) values(1);
 ```
+
 * 连接：`mysql -uroot -p123456 test`
 * 执行
+
 1. 查询数据：`select * from t;`
 2. 开启事务:`begin;`
 3. 插入一条数据： `insert into t value  (2)`
@@ -36,7 +40,6 @@ insert into t(c) values(1);
 13. 查询数据：`select * from t;`
 14. 回滚事务：`rollback;`
 15. 查询数据：`select * from t;`
-
 
 执行期望： 首先查看原数据，接着在事务中尝试添加两条数据，之后提交，能够查到事务中添加的数据，接着再开启事务，插入两条数据并回滚，此时事务中执行的插入并不生效。
 

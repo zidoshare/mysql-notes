@@ -1,6 +1,8 @@
 可重复读的场景下
 
 执行结果为：
+
+```
 1.cmd1 开启事务
 2.cmd1执行sql:select * from t
 +---+
@@ -18,7 +20,4 @@
 5.cmd1执行sql:update t set c = 3 where c = 1 执行成功,影响了1行
 6.cmd2执行sql:update t set c = 2 where c = 1
 panic: Error 1205: Lock wait timeout exceeded; try restarting transaction
-
-goroutine 1 [running]:
-main.main()
-	d:/projects/go/mysql-notes/1.事务/3.修改同列/main.go:121 +0x1187
+```
