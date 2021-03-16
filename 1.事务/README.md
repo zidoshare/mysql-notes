@@ -73,9 +73,9 @@ MySQL 提供了四个隔离级别：
 
 > 实现原理其实不用到处找，官方文档就有，这里我是稍微整理了一下，具体查看地址 [https://dev.mysql.com/doc/refman/5.7/en/mysql-acid.html](https://dev.mysql.com/doc/refman/5.7/en/mysql-acid.html)
 
-#### 原子性
+#### 原子性原理
 
-原子性其实代表的就是可 rollback。对于此，MySQL 提供一个 undo log(回滚日志)的日志来实现原子性，undo log 是 MySQL innodb 存储引擎所携带的日志
+原子性其实代表的就是 commit 和 rollback 两个操作。对于此，MySQL 提供一个 undo log(回滚日志)的日志来实现原子性，undo log 是 MySQL innodb 存储引擎所携带的日志
 
 当事务对数据库进行修改时，InnoDB 会生成对应的 undo log，然后如果需要回滚，就会调用利用 undolog 进行反向操作从而达到回滚的目的。
 
@@ -89,7 +89,7 @@ MySQL 提供了四个隔离级别：
 
 由此可见，实现原子性的第二个关键就是锁。它保证事务 B 中的操作不会干扰事务 a，保证操作整体的原子性。
 
-#### 持久性
+#### 持久性原理
 
 持久性是指事务一旦提交，它对数据库的改变就应该是永久性的。要实现这一点，就必须保证每一次写入都被持久化下来。
 
