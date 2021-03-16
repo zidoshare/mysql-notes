@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: test_mysql
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    volumes:
+      - ./my.cnf:/etc/mysql/my.cnf
