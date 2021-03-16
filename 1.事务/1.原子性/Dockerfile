@@ -1,6 +1,6 @@
-FROM golang:1.14
+FROM maven:3-openjdk-8
 WORKDIR /app
-COPY go.mod go.sum ./
+COPY pom.xml ./
 RUN  export GOPROXY=https://goproxy.cn && go mod download
 COPY . .
 ENTRYPOINT ["go","run","main.go"]
