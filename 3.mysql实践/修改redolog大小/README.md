@@ -7,7 +7,7 @@
 修改配置文件中的**innodb_log_file_size**，用于配置每个redo log文件大小。
 
 * 命令行：	--innodb-log-file-size=#
-* 环境变量： innodb_log_file_size
+* 环境变量： innodb_log各it各it各it_file_size
 * 作用范围： 全局
 * 是否可动态修改： 否
 * 类型:	Integer
