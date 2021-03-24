@@ -1,6 +1,6 @@
 # 如何设置主从同步
 
-主备启动后，分别创建数据库demo并导入demo.sql
+主备启动后，分别创建数据库 demo 并导入 demo.sql
 
 > source demo.sql
 
