@@ -1,4 +1,4 @@
-module demo
+module update_columns
 
 go 1.14
 

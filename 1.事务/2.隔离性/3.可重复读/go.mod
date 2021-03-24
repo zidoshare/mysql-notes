@@ -1,4 +1,4 @@
-module demo
+module isolation-demo3
 
 go 1.14
 

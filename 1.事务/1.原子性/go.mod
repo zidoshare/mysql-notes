@@ -1,4 +1,4 @@
-module demo
+module atomic
 
 go 1.14
 
