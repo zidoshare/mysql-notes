@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  demo_master_mysql:
+    container_name: demo_master_mysql
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    volumes:
+      - ./master.cnf:/etc/mysql/my.cnf
+  demo_slave_mysql:
+    container_name: demo_slave_mysql
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    links:
+      - demo_master_mysql:demo_master_mysql
+    volumes:
+      - ./slave.cnf:/etc/mysql/my.cnf
