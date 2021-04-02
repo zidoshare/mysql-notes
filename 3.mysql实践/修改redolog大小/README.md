@@ -2,6 +2,8 @@
 
 参阅 MySQL 文档中的 [Changing the Number or Size of InnoDB Redo Log Files](https://dev.mysql.com/doc/refman/5.7/en/innodb-redo-log.html)
 
+**binlog 是磁盘数据结构**
+
 确保 MySQL 处于正常关闭状态。
 
 修改配置文件中的 **innodb_log_file_size**，用于配置每个 redo log 文件大小。
